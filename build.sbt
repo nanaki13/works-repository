@@ -6,7 +6,7 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "bon.jo"
 ThisBuild / organizationName := "bon.joo"
 
-lazy val root = (project in file("."))
+lazy val wr = (project in file("."))
   .settings(
     name := "works-repository",
     libraryDependencies ++= Seq( scalaTest % Test,

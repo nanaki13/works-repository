@@ -9,13 +9,33 @@ import slick.sql.SqlProfile.ColumnOption.SqlType
 
 
 
-
+case class Images(val id : Int,val contentType:String ,val imgData:Array[Byte])
+case class Oeuvres( val id:Int,  val title:String,val  description:String,val dimensionX:Float,val dimensionY:Float,val creation: Int)
+case class SiteElement(val id:Int,val imageKey: Option[Int], val descriminator : Int)
+object Descri{
+  val IMAGE_MENU = 0
+}
 trait Schema {
   this :   WithProfile =>
 
   import  profile.api._
 
-  type Oeuvres = (Int, String, Int)
+  class SiteElementTable(tag: Tag) extends Table[SiteElement](tag, "SiteElement") {
+    // This is the primary key column:
+    def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
+
+    def imageKey: Rep[Option[Int]] = column[Option[Int]]("imageKey")
+    def descriminator: Rep[Int] = column[Int]("descriminator")
+
+    def imageKeyFk = foreignKey("imageKeyFk", imageKey,images)(se => se.id.?)
+    // Every table needs a * projection with the same type as the table's type parameter
+    def * : ProvenShape[SiteElement] =
+      (id, imageKey,descriminator) <> (SiteElement.tupled, SiteElement.unapply)
+  }
+
+  lazy val siteElement = TableQuery[SiteElementTable]
+
+ // type Oeuvres = (Int, String,String,Float,Float,Int )
 
   class OeuvresTable(tag: Tag) extends Table[Oeuvres](tag, "Oeuvre") {
     // This is the primary key column:
@@ -23,31 +43,40 @@ trait Schema {
 
     def title: Rep[String] = column[String]("title")
 
+    def description: Rep[String] = column[String]("description")
+
+    def dimensionX: Rep[Float] = column[Float]("dimension_x")
+    def dimensionY: Rep[Float] = column[Float]("dimension_y")
+
     def creation: Rep[Int] = column[Int]("date")
 
 
 
     // Every table needs a * projection with the same type as the table's type parameter
-    def * : ProvenShape[Oeuvres] =
-      (id, title, creation)
+    def *  =
+      (id, title,description,dimensionX,dimensionY, creation)  <> (Oeuvres.tupled, Oeuvres.unapply)
   }
-
-  type Themes = (Int, String)
   lazy val ouvres = TableQuery[OeuvresTable]
+
+
+  type Themes = (Int, String,Option[Int])
+
 
   class ThemesTable(tag: Tag) extends Table[Themes](tag, "Theme") {
     // This is the primary key column:
     def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
     def name: Rep[String] = column[String]("title")
+    def idThemeParent: Rep[Option[Int]] = column[Option[Int]]("id_theme_parent")
 
-
+    def fk_theme_parent = foreignKey("aaaaa", idThemeParent,themes)(th => th.id.?)
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Themes] =
-      (id, name)
+      (id, name,idThemeParent)
   }
 
   lazy val themes = TableQuery[ThemesTable]
+
   type OeuvresThemes = (Int, Int)
 
   class ThemesOeuvresTable(tag: Tag) extends Table[OeuvresThemes](tag, "ThemeOeuvres") {
@@ -69,20 +98,26 @@ trait Schema {
 
   lazy val oeuvresThemes = TableQuery[ThemesOeuvresTable]
 
-  type Images = (Int,String ,Array[Byte])
 
-  class ImagesTable(tag: Tag) extends Table[Images](tag, "Image") {
+
+  class  ImagesTable(tag: Tag) extends Table[Images](tag, "Image"){
     // This is the primary key column:
     def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
-    def name: Rep[String] = column[String]("name")
+    def contentType: Rep[String] = column[String]("contentType")
 
-    def imgData: Rep[Array[Byte]] = column[Array[Byte]]("path", SqlType("java.sql.Blob"))
-
+    def imgData: Rep[Array[Byte]] = column[Array[Byte]]("path")
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Images] =
-      (id, name,imgData )
+      (id, contentType,imgData ) <> (Images.tupled, Images.unapply)
   }
+
+  class ImagesTableReadWrite(tag: Tag) extends ImagesTable(tag =tag){
+
+    override def imgData: Rep[Array[Byte]] = column[Array[Byte]]("path", SqlType("java.sql.Blob"))
+
+  }
+
   lazy val images = TableQuery[ImagesTable]
   type OeuvresImages = (Int,Int )
   class OeuvreImagesTable(tag: Tag) extends Table[OeuvresImages](tag, "OeuvreImages") {
@@ -102,15 +137,32 @@ trait Schema {
       (idOeuvre, idImage)
   }
 
-
-
   lazy val oeuvreImages = TableQuery[OeuvreImagesTable]
 
 
+  type ThemesImages = (Int,Int )
+  class ThemesImagesTable(tag: Tag) extends Table[ThemesImages](tag, "ThemesImages") {
+    // This is the primary key column:
+    def idTheme: Rep[Int] = column[Int]("id_theme")
 
-   val allTableAsSeq = List(ouvres,themes,images,oeuvresThemes,oeuvreImages)
+    def idImage: Rep[Int] = column[Int]("id_image")
 
-  allTableAsSeq
+    def pk = primaryKey("pkot", (idTheme, idImage))
+
+    def fkt = foreignKey("t_i_to_t", idTheme, ouvres)(ou => ou.id)
+
+    def fki = foreignKey("t_i_to_i", idImage, images)(th => th.id)
+
+    // Every table needs a * projection with the same type as the table's type parameter
+    def * : ProvenShape[OeuvresImages] =
+      (idTheme, idImage)
+  }
+
+  lazy val themeImages = TableQuery[ThemesImagesTable]
+
+
+
+   val allTableAsSeq = List(ouvres,themes,TableQuery[ImagesTable],oeuvresThemes,oeuvreImages,siteElement,themeImages)
 
 
 }
