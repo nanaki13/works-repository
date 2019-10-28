@@ -1,7 +1,5 @@
 package bon.jo.helloworld.juliasite.model
 
-import java.sql.Blob
-
 import bon.jo.helloworld.juliasite.pers.WithProfile
 import slick.lifted.ProvenShape
 import slick.sql.SqlProfile.ColumnOption.SqlType
@@ -9,16 +7,16 @@ import slick.sql.SqlProfile.ColumnOption.SqlType
 
 
 
-case class Images(val id : Int,val contentType:String ,val imgData:Array[Byte])
-case class Oeuvres( val id:Int,  val title:String,val  description:String,val dimensionX:Float,val dimensionY:Float,val creation: Int)
-case class SiteElement(val id:Int,val imageKey: Option[Int], val descriminator : Int)
+case class Images( id : Int, contentType:String , imgData:Array[Byte])
+case class Oeuvres(  id:Int,   title:String,  description:String, dimensionX:Float, dimensionY:Float, creation: Int)
+case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int)
 object Descri{
   val IMAGE_MENU = 0
 }
 trait Schema {
   this :   WithProfile =>
 
-  import  profile.api._
+  import profile.api._
 
   class SiteElementTable(tag: Tag) extends Table[SiteElement](tag, "SiteElement") {
     // This is the primary key column:

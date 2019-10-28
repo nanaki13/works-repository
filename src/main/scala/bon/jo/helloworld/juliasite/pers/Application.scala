@@ -1,22 +1,19 @@
 package bon.jo.helloworld.juliasite.pers
 
-import slick.dbio.{Effect, NoStream}
 import slick.jdbc.{H2Profile, JdbcProfile, PostgresProfile}
 
-trait Application extends RepositoryContext with Repository {
 
-}
 
-class ApplicationFrom(override val profile: JdbcProfile) extends Application {
 
+class RepositoryImpl(override val profile: JdbcProfile)  extends RepositoryContext with SiteRepository {
   override def profileName: String = "h2"
   val _import = profile.api
 }
 
-object ApplicationInMemmoryH2 extends ApplicationFrom(H2Profile)
 
-class ApplicationPostgresProfile() extends ApplicationFrom(PostgresProfile){
+object H2Repo extends RepositoryImpl(H2Profile)
 
 
+object PostgresRepo extends RepositoryImpl(PostgresProfile){
   override def profileName: String = "postgres"
 }

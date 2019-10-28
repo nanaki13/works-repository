@@ -1,20 +1,16 @@
 package bon.jo.helloworld.juliasite.pers
 
-import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.file.{Files, Paths}
-import java.util.concurrent.atomic.AtomicInteger
 
 import bon.jo.helloworld.juliasite.model.Images
-import slick.jdbc.{H2Profile, PostgresProfile}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.io.Source
 
+import bon.jo.helloworld.juliasite.pers.H2Repo._
+import bon.jo.helloworld.juliasite.pers.H2Repo.profile.api._
+object Test  extends App {
 
-object Test extends ApplicationPostgresProfile with App {
-
-  import _import._
 
   //def allShema() = allTableAsSeq.map(_.schema).reduce((a,b)=> a ++ b)
   val ouvr = List()
