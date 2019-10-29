@@ -126,9 +126,9 @@ trait Schema {
 
     def pk = primaryKey("pkoi", (idOeuvre, idImage))
 
-    def fkO = foreignKey("t_i_to_o", idOeuvre, ouvres)(ou => ou.id)
+    def fkO = foreignKey("fk_oi_to_o", idOeuvre, ouvres)(ou => ou.id)
 
-    def fki = foreignKey("t_i_to_i", idImage, images)(th => th.id)
+    def fki = foreignKey("fk_oi_to_i", idImage, images)(th => th.id)
 
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[OeuvresImages] =
@@ -147,9 +147,9 @@ trait Schema {
 
     def pk = primaryKey("pkot", (idTheme, idImage))
 
-    def fkt = foreignKey("t_i_to_t", idTheme, ouvres)(ou => ou.id)
+    def fkt = foreignKey("fk_ti_to_t", idTheme, themes)(ou => ou.id)
 
-    def fki = foreignKey("t_i_to_i", idImage, images)(th => th.id)
+    def fki = foreignKey("fk_ti_to_i", idImage, images)(th => th.id)
 
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[OeuvresImages] =

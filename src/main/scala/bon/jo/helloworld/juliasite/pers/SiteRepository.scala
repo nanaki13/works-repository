@@ -38,31 +38,35 @@ trait SiteRepository {
   def imagesByOeuvres(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvres, Seq], Seq[Oeuvres]] = _imagesByOeuvres(i)
 
 
-  def createMissing(): Unit = {
+  def createMissing(): Future[List[Unit]] = {
     val existing = db.run(MTable.getTables)
-    val f = existing.flatMap(v => {
+    existing.flatMap(v => {
       val names = v.map(mt => mt.name.name)
       val createIfNotExist = allTableAsSeq.filter(table =>
-        !names.contains(table.baseTableRow.tableName)).map(_.schema.create)
-      db.run(DBIO.sequence(createIfNotExist))
+
+        !names.contains(table.baseTableRow.tableName)).map(e=>{println(e.baseTableRow.tableName);e}).map(_.schema.create)
+
+      try {
+        db.run(DBIO.sequence(createIfNotExist))
+      } catch {
+        case l: Exception => Future.failed(l)
+      }
     })
-    Await.result(f, Duration.Inf)
-    ()
+
   }
 
-  def dropAll(): Unit = {
+  def dropAll(): Future[List[Unit]] = {
     val f = allTableAsSeq.reverse.map(_.schema).map(e => {
       e.drop.statements.foreach(println);
       e
     })
-    f.foreach(st => {
+    Future.sequence(f.map(st => {
       try {
-
-        Await.result(db.run(st.drop), Duration.Inf)
+        db.run(st.drop)
       } catch {
-        case l: Any => println(st + " : " + l)
+        case l: Exception => Future.failed(l)
       }
-    })
+    }))
 
   }
 
@@ -74,9 +78,9 @@ trait SiteRepository {
   }
 
   def addImages(data: Array[Byte], contentType: String): Future[Option[(Int, String)]] = {
-    db.run((images += Images(0, contentType, data)).flatMap{
+    db.run((images += Images(0, contentType, data)).flatMap {
       _ => images.sortBy(_.id.desc).map(e => (e.id, e.contentType)).result.headOption
-      })
+    })
 
   }
 
@@ -85,7 +89,7 @@ trait SiteRepository {
     val add = (siteElement += se).flatMap(
       _ => siteElement.sortBy(_.id.desc).map(e => e.id).result.headOption
     )
-    db.run( add.map {
+    db.run(add.map {
       case Some(1) => imageKey
       case _ => None
     })
@@ -105,13 +109,15 @@ trait SiteRepository {
   }
 
   object Initilaizer {
-    def createDropCreate(): Unit = {
-      createMissing()
-      dropAll()
-      createMissing()
+    def createDropCreate(): Future[List[Unit]] = {
+      createMissing().flatMap { _ =>
+        dropAll().flatMap { _ =>
+          createMissing()
+        }
+      }
     }
-    createDropCreate
   }
+
 }
 
 
