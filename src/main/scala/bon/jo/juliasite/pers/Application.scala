@@ -1,6 +1,9 @@
-package bon.jo.helloworld.juliasite.pers
+package bon.jo.juliasite.pers
 
 import slick.jdbc.{H2Profile, JdbcProfile, PostgresProfile}
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 
 
@@ -17,3 +20,4 @@ object H2Repo extends RepositoryImpl(H2Profile)
 object PostgresRepo extends RepositoryImpl(PostgresProfile){
   override def profileName: String = "postgres"
 }
+

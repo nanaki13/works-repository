@@ -1,6 +1,6 @@
-package bon.jo.helloworld.juliasite.pers
+package bon.jo.juliasite.pers
 
-import bon.jo.helloworld.juliasite.model.Schema
+import bon.jo.juliasite.model.Schema
 import slick.dbio.{DBIOAction, NoStream}
 
 import scala.concurrent.Await

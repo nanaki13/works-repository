@@ -1,6 +1,6 @@
-package bon.jo.helloworld.juliasite.model
+package bon.jo.juliasite.model
 
-import bon.jo.helloworld.juliasite.pers.WithProfile
+import bon.jo.juliasite.pers.WithProfile
 import slick.lifted.ProvenShape
 import slick.sql.SqlProfile.ColumnOption.SqlType
 
@@ -8,7 +8,7 @@ import slick.sql.SqlProfile.ColumnOption.SqlType
 
 
 case class Images( id : Int, contentType:String , imgData:Array[Byte])
-case class Oeuvres(  id:Int,   title:String,  description:String, dimensionX:Float, dimensionY:Float, creation: Int)
+case class Oeuvre(id:Int, title:String, description:String, dimensionX:Float, dimensionY:Float, creation: Int)
 case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int)
 object Descri{
   val IMAGE_MENU = 0
@@ -35,7 +35,7 @@ trait Schema {
 
  // type Oeuvres = (Int, String,String,Float,Float,Int )
 
-  class OeuvresTable(tag: Tag) extends Table[Oeuvres](tag, "Oeuvre") {
+  class OeuvresTable(tag: Tag) extends Table[Oeuvre](tag, "Oeuvre") {
     // This is the primary key column:
     def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
@@ -52,12 +52,12 @@ trait Schema {
 
     // Every table needs a * projection with the same type as the table's type parameter
     def *  =
-      (id, title,description,dimensionX,dimensionY, creation)  <> (Oeuvres.tupled, Oeuvres.unapply)
+      (id, title,description,dimensionX,dimensionY, creation)  <> (Oeuvre.tupled, Oeuvre.unapply)
   }
   lazy val ouvres = TableQuery[OeuvresTable]
 
 
-  type Themes = (Int, String,Option[Int])
+  type Themes = (Int, String,Option[Int],Int,Int)
 
 
   class ThemesTable(tag: Tag) extends Table[Themes](tag, "Theme") {
@@ -66,22 +66,28 @@ trait Schema {
 
     def name: Rep[String] = column[String]("title")
     def idThemeParent: Rep[Option[Int]] = column[Option[Int]]("id_theme_parent")
+    def x: Rep[Int] = column[Int]("x")
+
+    def y: Rep[Int] = column[Int]("y")
 
     def fk_theme_parent = foreignKey("aaaaa", idThemeParent,themes)(th => th.id.?)
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Themes] =
-      (id, name,idThemeParent)
+      (id, name,idThemeParent,x,y)
   }
 
   lazy val themes = TableQuery[ThemesTable]
 
-  type OeuvresThemes = (Int, Int)
+  type OeuvresThemes = (Int, Int,Int,Int)
 
   class ThemesOeuvresTable(tag: Tag) extends Table[OeuvresThemes](tag, "ThemeOeuvres") {
     // This is the primary key column:
     def idOeuvre: Rep[Int] = column[Int]("id_oeuvre")
 
     def idTheme: Rep[Int] = column[Int]("id_theme")
+    def xInTheme: Rep[Int] = column[Int]("x_in_theme")
+
+    def yInTheme: Rep[Int] = column[Int]("y_in_theme")
 
     def pk = primaryKey("pkto", (idOeuvre, idTheme))
 
@@ -91,7 +97,7 @@ trait Schema {
 
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[OeuvresThemes] =
-      (idTheme , idOeuvre)
+      (idTheme , idOeuvre,xInTheme,yInTheme)
   }
 
   lazy val oeuvresThemes = TableQuery[ThemesOeuvresTable]
@@ -104,7 +110,7 @@ trait Schema {
 
     def contentType: Rep[String] = column[String]("contentType")
 
-    def imgData: Rep[Array[Byte]] = column[Array[Byte]]("path")
+    def imgData: Rep[Array[Byte]] = column[Array[Byte]]("imgData")
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Images] =
       (id, contentType,imgData ) <> (Images.tupled, Images.unapply)
@@ -112,7 +118,7 @@ trait Schema {
 
   class ImagesTableReadWrite(tag: Tag) extends ImagesTable(tag =tag){
 
-    override def imgData: Rep[Array[Byte]] = column[Array[Byte]]("path", SqlType("java.sql.Blob"))
+    override def imgData: Rep[Array[Byte]] = column[Array[Byte]]("imgData", SqlType("java.sql.Blob"))
 
   }
 
@@ -145,14 +151,15 @@ trait Schema {
 
     def idImage: Rep[Int] = column[Int]("id_image")
 
+
     def pk = primaryKey("pkot", (idTheme, idImage))
 
-    def fkt = foreignKey("fk_ti_to_t", idTheme, themes)(ou => ou.id)
+    def fkt = foreignKey("fk_ti_to_t", idTheme, themes)(th => th.id)
 
-    def fki = foreignKey("fk_ti_to_i", idImage, images)(th => th.id)
+    def fki = foreignKey("fk_ti_to_i", idImage, images)(i => i.id)
 
     // Every table needs a * projection with the same type as the table's type parameter
-    def * : ProvenShape[OeuvresImages] =
+    def * : ProvenShape[ThemesImages] =
       (idTheme, idImage)
   }
 
@@ -160,7 +167,7 @@ trait Schema {
 
 
 
-   val allTableAsSeq = List(ouvres,themes,TableQuery[ImagesTable],oeuvresThemes,oeuvreImages,siteElement,themeImages)
+   val allTableAsSeq = List(ouvres,themes,images,oeuvresThemes,oeuvreImages,siteElement,themeImages)
 
 
 }

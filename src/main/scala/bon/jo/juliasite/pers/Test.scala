@@ -1,14 +1,14 @@
-package bon.jo.helloworld.juliasite.pers
+package bon.jo.juliasite.pers
 
 import java.nio.file.{Files, Paths}
 
-import bon.jo.helloworld.juliasite.model.Images
+import bon.jo.juliasite.model.Images
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-import bon.jo.helloworld.juliasite.pers.H2Repo._
-import bon.jo.helloworld.juliasite.pers.H2Repo.profile.api._
+import bon.jo.juliasite.pers.H2Repo._
+import bon.jo.juliasite.pers.H2Repo.profile.api._
 object Test  extends App {
 
 
@@ -62,44 +62,44 @@ object Test  extends App {
 
   def oldTest = {
 
-
-    val insert = (ouvres ++= ouvr) andThen (themes ++= theme)
-
-    val select = ouvres.result
-    createMissing()
-    val f = db.run(insert andThen select) flatMap  { a => {
-      println(a)
-      for (e <- a) {
-        if (e.id < 3) {
-          db.run(oeuvresThemes += (1, e.id))
-        } else {
-          db.run(oeuvresThemes += (2, e.id))
-        }
-
-      }
-      println("o b ")
-
-      db.run(ouevreByTheme(1).result)
-    }
-    } map (a => {a.foreach(println);a}) map { a => {
-      a.map(x =>(x.id,x.id))
-    } }map {println}
-    Await.result(f, Duration.Inf)
-
-    val aa = List(Array("aaa","aaa"),Array("aaa","aca","aaa"))
-
-    def testFor( char: Char) = for{
-      e <- aa
-      ee <- e
-      eee <- ee if(eee == 'c')
-    }yield (ee)
-
-    testFor('e').map(println(_))
-
-    aa.flatMap((e)=> {
-      //  val dup  = e.iterator.duplicate
-      e.iterator ++ e.iterator
-    } ).map(println(_))
+//
+//    val insert = (ouvres ++= ouvr) andThen (themes ++= theme)
+//
+//    val select = ouvres.result
+//    createMissing()
+//    val f = db.run(insert andThen select) flatMap  { a => {
+//      println(a)
+//      for (e <- a) {
+//        if (e.id < 3) {
+//          db.run(oeuvresThemes += (1, e.id))
+//        } else {
+//          db.run(oeuvresThemes += (2, e.id))
+//        }
+//
+//      }
+//      println("o b ")
+//
+//      db.run(ouevreByTheme(1).result)
+//    }
+//    } map (a => {a.foreach(println);a}) map { a => {
+//      a.map(x =>(x.id,x.id))
+//    } }map {println}
+//    Await.result(f, Duration.Inf)
+//
+//    val aa = List(Array("aaa","aaa"),Array("aaa","aca","aaa"))
+//
+//    def testFor( char: Char) = for{
+//      e <- aa
+//      ee <- e
+//      eee <- ee if(eee == 'c')
+//    }yield (ee)
+//
+//    testFor('e').map(println(_))
+//
+//    aa.flatMap((e)=> {
+//      //  val dup  = e.iterator.duplicate
+//      e.iterator ++ e.iterator
+//    } ).map(println(_))
   }
 
 }

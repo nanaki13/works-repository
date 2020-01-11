@@ -1,6 +1,6 @@
-package bon.jo.helloworld.juliasite.pers
+package bon.jo.juliasite.pers
 
-import bon.jo.helloworld.juliasite.model.{Descri, Images, Oeuvres, SiteElement}
+import bon.jo.juliasite.model.{Descri, Images, Oeuvre, SiteElement}
 import slick.jdbc.meta.MTable
 import slick.lifted.AppliedCompiledFunction
 
@@ -13,15 +13,15 @@ trait SiteRepository {
 
   import profile.api._
 
-  type image = bon.jo.helloworld.juliasite.model.Images
+  type image = bon.jo.juliasite.model.Images
 
   def allShema: profile.DDL = allTableAsSeq.map(_.schema).reduce((a, b) => a ++ b)
 
 
-  def __ouevreByTheme(tKey: Rep[Int]): Query[OeuvresTable, Oeuvres, Seq] = for {
+  def __ouevreByTheme(tKey: Rep[Int]): Query[(OeuvresTable, Rep[Int], Rep[Int]), (Oeuvre, Int, Int), Seq] = for {
     o <- ouvres
     ot <- oeuvresThemes if o.id === ot.idOeuvre && ot.idTheme === tKey
-  } yield o
+  } yield (o, ot.xInTheme, ot.yInTheme)
 
   def __imagesByOeuvres(imagesKey: Rep[Int]): Query[ImagesTable, image, Seq] = for {
     o <- images
@@ -32,10 +32,13 @@ trait SiteRepository {
   val _imagesByOeuvres = Compiled(__ouevreByTheme _)
 
 
-  def ouevreByTheme(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvres, Seq], Seq[Oeuvres]] = _ouvresByTheme(i)
+  def getOuevresByTheme(themeKey: Int):
+  AppliedCompiledFunction[Int, Query[(OeuvresTable, Rep[Int], Rep[Int]), (Oeuvre, Int, Int), Seq]
+    , Seq[(Oeuvre, Int, Int)]]
+  = _ouvresByTheme(themeKey)
 
 
-  def imagesByOeuvres(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvres, Seq], Seq[Oeuvres]] = _imagesByOeuvres(i)
+  //  def imagesByOeuvres(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvre, Seq], Seq[Oeuvre]] = _imagesByOeuvres(i)
 
 
   def createMissing(): Future[List[Unit]] = {
@@ -44,7 +47,9 @@ trait SiteRepository {
       val names = v.map(mt => mt.name.name)
       val createIfNotExist = allTableAsSeq.filter(table =>
 
-        !names.contains(table.baseTableRow.tableName)).map(e=>{println(e.baseTableRow.tableName);e}).map(_.schema.create)
+        !names.contains(table.baseTableRow.tableName)).map(e => {
+        println(e.baseTableRow.tableName); e
+      }).map(_.schema.create)
 
       try {
         db.run(DBIO.sequence(createIfNotExist))
@@ -64,7 +69,7 @@ trait SiteRepository {
       try {
         db.run(st.drop)
       } catch {
-        case l: Exception => Future.failed(l)
+        case l: Exception => Future.successful(())
       }
     }))
 
@@ -110,11 +115,7 @@ trait SiteRepository {
 
   object Initilaizer {
     def createDropCreate(): Future[List[Unit]] = {
-      createMissing().flatMap { _ =>
-        dropAll().flatMap { _ =>
-          createMissing()
-        }
-      }
+      createMissing()
     }
   }
 

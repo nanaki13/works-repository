@@ -1,4 +1,4 @@
-package bon.jo.helloworld.juliasite.pers
+package bon.jo.juliasite.pers
 
 trait DB extends WithProfile {
 
