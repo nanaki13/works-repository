@@ -1,7 +1,7 @@
 package bon.jo.juliasite.pers
 
-import bon.jo.juliasite.model.{Descri, Images, Oeuvre, SiteElement}
-import slick.dbio.{Effect, NoStream}
+import bon.jo.juliasite.model.Schema
+import bon.jo.juliasite.model.Schema.{Descri, SiteElement}
 import slick.jdbc.meta.MTable
 import slick.lifted.AppliedCompiledFunction
 
@@ -13,29 +13,29 @@ trait SiteRepository {
 
   import profile.api._
 
-  type image = bon.jo.juliasite.model.Images
+
 
   def allShema: profile.DDL = allTableAsSeq.map(_.schema).reduce((a, b) => a ++ b)
 
 
-  def __ouevreByTheme(tKey: Rep[Int]): Query[(OeuvresTable, Rep[Int], Rep[Int]), (Oeuvre, Int, Int), Seq] = for {
-    o <- ouvres
-    ot <- oeuvresThemes if o.id === ot.idOeuvre && ot.idTheme === tKey
-  } yield (o, ot.xInTheme, ot.yInTheme)
-
-  def __imagesByOeuvres(imagesKey: Rep[Int]): Query[ImagesTable, image, Seq] = for {
-    o <- images
-    ot <- oeuvreImages if o.id === ot.idOeuvre && ot.idImage === imagesKey
-  } yield o
-
-  val _ouvresByTheme = Compiled(__ouevreByTheme _)
-  val _imagesByOeuvres = Compiled(__ouevreByTheme _)
-
-
-  def getOuevresByTheme(themeKey: Int):
-  AppliedCompiledFunction[Int, Query[(OeuvresTable, Rep[Int], Rep[Int]), (Oeuvre, Int, Int), Seq]
-    , Seq[(Oeuvre, Int, Int)]]
-  = _ouvresByTheme(themeKey)
+//  def __ouevreByTheme(tKey: Rep[Int]): Query[(OeuvresTable, Rep[Int], Rep[Int]), (Schema.Oeuvre, Int, Int), Seq] = for {
+//    o <- ouvres
+//    ot <- oeuvresThemes if o.id === ot.idOeuvre && ot.idTheme === tKey
+//  } yield (o, ot.xInTheme, ot.yInTheme)
+//
+//  def __imagesByOeuvres(imagesKey: Rep[Int]) = for {
+//    o <- images.map(imageWithoutDataProjection)
+//    ot <- oeuvreImages if o._1 === ot.idOeuvre && ot.idImage === imagesKey
+//  } yield o
+//
+//  val _ouvresByTheme = Compiled(__ouevreByTheme _)
+//  val _imagesByOeuvres = Compiled(__ouevreByTheme _)
+//
+//
+//  def getOuevresByTheme(themeKey: Int):
+//  AppliedCompiledFunction[Int, Query[(OeuvresTable, Rep[Int], Rep[Int]), (Schema.Oeuvre, Int, Int), Seq]
+//    , Seq[(Schema.Oeuvre, Int, Int)]]
+//  = _ouvresByTheme(themeKey)
 
 
   //  def imagesByOeuvres(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvre, Seq], Seq[Oeuvre]] = _imagesByOeuvres(i)
@@ -83,7 +83,7 @@ trait SiteRepository {
   }
 
   def addImages(data: Array[Byte], contentType: String,name : String): Future[Option[(Int, String)]] = {
-    db.run((images += Images(0, contentType, data, name)).flatMap {
+    db.run((images += (0, contentType, data, name)).flatMap {
       _ => images.sortBy(_.id.desc).map(e => (e.id, e.contentType)).result.headOption
     })
 
