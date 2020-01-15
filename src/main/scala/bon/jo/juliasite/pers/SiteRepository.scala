@@ -1,11 +1,11 @@
 package bon.jo.juliasite.pers
 
 import bon.jo.juliasite.model.{Descri, Images, Oeuvre, SiteElement}
+import slick.dbio.{Effect, NoStream}
 import slick.jdbc.meta.MTable
 import slick.lifted.AppliedCompiledFunction
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 
 trait SiteRepository {
@@ -60,19 +60,19 @@ trait SiteRepository {
 
   }
 
-  def dropAll(): Future[List[Unit]] = {
+  def dropAll(): Seq[ DBIOAction[Unit, NoStream, _]] = {
     val f = allTableAsSeq.reverse.map(_.schema).map(e => {
       e.drop.statements.foreach(println);
       e
     })
-    Future.sequence(f.map(st => {
-      try {
-        db.run(st.drop)
-      } catch {
-        case l: Exception => Future.successful(())
-      }
-    }))
 
+    f.map(_.drop)
+
+  }
+
+  def deleteImage(id : Int): Future[Boolean] = {
+    val deleteAction =  images.filter(_.id === id).delete
+    db.run(deleteAction).map(e => e ==1)
   }
 
   def imagesMenuLnk(): Future[Seq[(Int, String)]] = {
@@ -82,8 +82,8 @@ trait SiteRepository {
     } yield (im.id, im.contentType)).result)
   }
 
-  def addImages(data: Array[Byte], contentType: String): Future[Option[(Int, String)]] = {
-    db.run((images += Images(0, contentType, data)).flatMap {
+  def addImages(data: Array[Byte], contentType: String,name : String): Future[Option[(Int, String)]] = {
+    db.run((images += Images(0, contentType, data, name)).flatMap {
       _ => images.sortBy(_.id.desc).map(e => (e.id, e.contentType)).result.headOption
     })
 
@@ -100,8 +100,8 @@ trait SiteRepository {
     })
   }
 
-  def addImagesMenu(data: Array[Byte], contentType: String): Future[Option[(Int, String)]] = {
-    addImages(data, contentType) flatMap {
+  def addImagesMenu(data: Array[Byte], contentType: String,name : String): Future[Option[(Int, String)]] = {
+    addImages(data, contentType,name ) flatMap {
       case Some((id, ct)) => {
         addSiteElement(Some(id), Descri.IMAGE_MENU) map {
           case Some(id) => Some((id, ct))

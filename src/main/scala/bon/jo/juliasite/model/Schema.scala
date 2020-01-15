@@ -7,7 +7,7 @@ import slick.sql.SqlProfile.ColumnOption.SqlType
 
 
 
-case class Images( id : Int, contentType:String , imgData:Array[Byte])
+case class Images( id : Int, contentType:String , imgData:Array[Byte], name : String)
 case class Oeuvre(id:Int, title:String, description:String, dimensionX:Float, dimensionY:Float, creation: Int)
 case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int)
 object Descri{
@@ -57,7 +57,7 @@ trait Schema {
   lazy val ouvres = TableQuery[OeuvresTable]
 
 
-  type Themes = (Int, String,Option[Int],Int,Int)
+  type Themes = (Int, String,Option[Int],Int,Int,Boolean)
 
 
   class ThemesTable(tag: Tag) extends Table[Themes](tag, "Theme") {
@@ -69,11 +69,12 @@ trait Schema {
     def x: Rep[Int] = column[Int]("x")
 
     def y: Rep[Int] = column[Int]("y")
+    def final_theme: Rep[Boolean] = column[Boolean]("final")
 
-    def fk_theme_parent = foreignKey("aaaaa", idThemeParent,themes)(th => th.id.?)
+    def fk_theme_parent = foreignKey("th_to_pth", idThemeParent,themes)(th => th.id.?)
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Themes] =
-      (id, name,idThemeParent,x,y)
+      (id, name,idThemeParent,x,y, final_theme)
   }
 
   lazy val themes = TableQuery[ThemesTable]
@@ -88,6 +89,8 @@ trait Schema {
     def xInTheme: Rep[Int] = column[Int]("x_in_theme")
 
     def yInTheme: Rep[Int] = column[Int]("y_in_theme")
+
+
 
     def pk = primaryKey("pkto", (idOeuvre, idTheme))
 
@@ -110,10 +113,12 @@ trait Schema {
 
     def contentType: Rep[String] = column[String]("contentType")
 
+    def name: Rep[String] = column[String]("name")
+
     def imgData: Rep[Array[Byte]] = column[Array[Byte]]("imgData")
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Images] =
-      (id, contentType,imgData ) <> (Images.tupled, Images.unapply)
+      (id, contentType,imgData,name ) <> (Images.tupled, Images.unapply)
   }
 
   class ImagesTableReadWrite(tag: Tag) extends ImagesTable(tag =tag){

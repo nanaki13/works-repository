@@ -37,7 +37,7 @@ object Test  extends App {
     println(imgd.size)
     //  Await.result(db.run( images.schema.dropIfExists), Duration.Inf)
     //  val a = new AtomicInteger(1)
-    val img = Images(0,"Bien ou qoui",imgd)
+    val img = Images(0,"Bien ou qoui",imgd,"test")
     (images += img).statements.foreach(println(_))
     val f= db.run( images += img) flatMap  { e =>
       println("res insert image = "+e)
