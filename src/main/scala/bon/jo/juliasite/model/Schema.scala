@@ -1,5 +1,7 @@
 package bon.jo.juliasite.model
 
+import java.time.LocalDate
+
 import bon.jo.juliasite.model.Schema._
 import bon.jo.juliasite.pers.WithProfile
 import slick.lifted.ProvenShape
