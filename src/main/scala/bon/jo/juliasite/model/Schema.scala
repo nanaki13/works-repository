@@ -116,7 +116,7 @@ trait Schema {
       (idTheme , idOeuvre,xInTheme,yInTheme)
   }
 
-  lazy val oeuvresThemes = TableQuery[ThemesOeuvresTable]
+  lazy val themesOeuvres = TableQuery[ThemesOeuvresTable]
 
 
 
@@ -186,6 +186,6 @@ trait Schema {
 
 
   def imageWithoutDataProjection(t : ImagesTable): (Rep[Int], Rep[String], Rep[String]) = (t.id,t.contentType,t.name)
-   val allTableAsSeq = List(oeuvres,themes,images,oeuvresThemes,oeuvreImages,siteElement,themeImages)
+   val allTableAsSeq = List(oeuvres,themes,images,themesOeuvres,oeuvreImages,siteElement,themeImages)
 
 }
