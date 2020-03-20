@@ -33,7 +33,7 @@ trait Schema {
 
   class SiteElementTable(tag: Tag) extends Table[SiteElement](tag, "SiteElement") {
     // This is the primary key column:
-    def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def id: Rep[Int] = column[Int]("id", O.PrimaryKey)
 
     def imageKey: Rep[Option[Int]] = column[Option[Int]]("imageKey")
     def descriminator: Rep[Int] = column[Int]("descriminator")
@@ -50,7 +50,7 @@ trait Schema {
 
   class OeuvresTable(tag: Tag) extends Table[Oeuvre](tag, "Oeuvre") {
     // This is the primary key column:
-    def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def id: Rep[Int] = column[Int]("id", O.PrimaryKey)
 
     def title: Rep[String] = column[String]("title")
 
@@ -75,7 +75,7 @@ trait Schema {
 
   class ThemesTable(tag: Tag) extends Table[Themes](tag, "Theme") {
     // This is the primary key column:
-    def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def id: Rep[Int] = column[Int]("id", O.PrimaryKey)
 
     def name: Rep[String] = column[String]("title")
     def idThemeParent: Rep[Option[Int]] = column[Option[Int]]("id_theme_parent")
@@ -122,7 +122,7 @@ trait Schema {
 
   class  ImagesTable(tag: Tag) extends Table[Images](tag, "Image"){
     // This is the primary key column:
-    def id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def id: Rep[Int] = column[Int]("id", O.PrimaryKey)
 
     def contentType: Rep[String] = column[String]("contentType")
 
