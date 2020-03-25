@@ -5,7 +5,7 @@ import bon.jo.juliasite.model.Schema.{Descri, SiteElement}
 import slick.jdbc.meta.MTable
 import slick.lifted.AppliedCompiledFunction
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 trait SiteRepository {
@@ -13,6 +13,7 @@ trait SiteRepository {
 
   import profile.api._
 
+  implicit   val ctx: ExecutionContext
 
 
   def allShema: profile.DDL = allTableAsSeq.map(_.schema).reduce((a, b) => a ++ b)
@@ -82,8 +83,8 @@ trait SiteRepository {
     } yield (im.id, im.contentType)).result)
   }
 
-  def addImages(data: Array[Byte], contentType: String,name : String): Future[Option[(Int, String)]] = {
-    db.run((images += (0, contentType, data, name)).flatMap {
+  def addImages(data: Array[Byte], contentType: String,name : String,base:String): Future[Option[(Int, String)]] = {
+    db.run((images += (0, contentType, data, name,base)).flatMap {
       _ => images.sortBy(_.id.desc).map(e => (e.id, e.contentType)).result.headOption
     })
 
@@ -100,18 +101,6 @@ trait SiteRepository {
     })
   }
 
-  def addImagesMenu(data: Array[Byte], contentType: String,name : String): Future[Option[(Int, String)]] = {
-    addImages(data, contentType,name ) flatMap {
-      case Some((id, ct)) => {
-        addSiteElement(Some(id), Descri.IMAGE_MENU) map {
-          case Some(id) => Some((id, ct))
-          case _ => None
-        }
-      }
-      case _ => Future.successful(None)
-    }
-
-  }
 
   object Initilaizer {
     def createDropCreate(): Future[List[Unit]] = {

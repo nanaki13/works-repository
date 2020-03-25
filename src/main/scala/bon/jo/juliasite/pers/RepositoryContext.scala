@@ -5,11 +5,11 @@ import slick.dbio.Effect.Write
 import slick.dbio.{DBIOAction, NoStream}
 import slick.lifted.Query
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 trait RepositoryContext extends WithProfile with DB with Schema {
-  implicit def ctx = scala.concurrent.ExecutionContext.Implicits.global
+
 
   def runAndWait[R](value: DBIOAction[R, NoStream, Nothing]): Unit = {
     Await.result(db.run(value), Duration.Inf)

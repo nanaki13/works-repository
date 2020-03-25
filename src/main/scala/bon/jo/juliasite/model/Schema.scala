@@ -17,7 +17,7 @@ object Schema{
   type ThemesImages = (Int,Int )
   type OeuvresImages = (Int,Int )
   type OeuvresThemes = (Int, Int,Int,Int)
-  type Images =(  Int, String , Array[Byte],   String)
+  type Images =(  Int, String , Array[Byte],   String,String)
   type ImagesWithoutData =(  Int, String ,  String)
   case class Oeuvre(id:Int, title:String, description:String, dimensionX:Float, dimensionY:Float, creation: Int)
   case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int)
@@ -128,10 +128,12 @@ trait Schema {
 
     def name: Rep[String] = column[String]("name")
 
+    def base: Rep[String] = column[String]("base")
+
     def imgData: Rep[Array[Byte]] = column[Array[Byte]]("imgData")
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[Images] =
-      (id, contentType,imgData,name )
+      (id, contentType,imgData,name,base )
   }
 
   class ImagesTableReadWrite(tag: Tag) extends ImagesTable(tag =tag){
