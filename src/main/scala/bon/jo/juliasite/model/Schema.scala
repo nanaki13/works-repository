@@ -20,7 +20,8 @@ object Schema{
   type Images =(  Int, String , Array[Byte],   String,String)
   type ImagesWithoutData =(  Int, String ,  String)
   case class Oeuvre(id:Int, title:String, description:String, dimensionX:Float, dimensionY:Float, creation: Int)
-  case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int)
+  case class SiteElement( id:Int, imageKey: Option[Int],  descriminator : Int,order : Int)
+  case class SiteText(uid : String,index : Int,text : String)
   object Descri{
     val IMAGE_MENU = 0
   }
@@ -37,11 +38,11 @@ trait Schema {
 
     def imageKey: Rep[Option[Int]] = column[Option[Int]]("imageKey")
     def descriminator: Rep[Int] = column[Int]("descriminator")
-
+    def order: Rep[Int] = column[Int]("order")
     def imageKeyFk = foreignKey("imageKeyFk", imageKey,images)(se => se.id.?)
     // Every table needs a * projection with the same type as the table's type parameter
     def * : ProvenShape[SiteElement] =
-      (id, imageKey,descriminator) <> (SiteElement.tupled, SiteElement.unapply)
+      (id, imageKey,descriminator,order) <> (SiteElement.tupled, SiteElement.unapply)
   }
 
   lazy val siteElement = TableQuery[SiteElementTable]
@@ -190,4 +191,20 @@ trait Schema {
   def imageWithoutDataProjection(t : ImagesTable): (Rep[Int], Rep[String], Rep[String]) = (t.id,t.contentType,t.name)
    val allTableAsSeq = List(oeuvres,themes,images,themesOeuvres,oeuvreImages,siteElement,themeImages)
 
+
+
+  class SiteTextTable(tag: Tag) extends Table[SiteText](tag, "site_text") {
+    // This is the primary key column:
+
+    def uid: Rep[String] = column[String]("uid", O.PrimaryKey)
+
+    def text: Rep[String] = column[String]("txt", O.PrimaryKey)
+
+    def index: Rep[Int] = column[Int]("index")
+
+    def pk = primaryKey("pk_a", (uid, index))
+    def *  =
+      ( uid,index,text)  <> (SiteText.tupled, SiteText.unapply)
+  }
+  lazy val texts = TableQuery[SiteTextTable]
 }

@@ -18,5 +18,5 @@ trait RepositoryContext extends WithProfile with DB with Schema {
   def run[R](a: DBIOAction[R, NoStream, Nothing]): Future[R] = db.run(a)
 
   type UBase = profile.api.DBIOAction[Boolean, NoStream, Write]
-  type QueryBaseType = Query[(OeuvresTable, OeuvreImagesTable, ThemesOeuvresTable), (Schema.Oeuvre, (Int, Int), (Int, Int, Int, Int)), Seq]
+  type QueryBaseType = Query[_, (Schema.Oeuvre, Option[(Int, Int)], (Int, Int, Int, Int)), Seq]
 }

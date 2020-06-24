@@ -19,28 +19,6 @@ trait SiteRepository {
   def allShema: profile.DDL = allTableAsSeq.map(_.schema).reduce((a, b) => a ++ b)
 
 
-//  def __ouevreByTheme(tKey: Rep[Int]): Query[(OeuvresTable, Rep[Int], Rep[Int]), (Schema.Oeuvre, Int, Int), Seq] = for {
-//    o <- ouvres
-//    ot <- oeuvresThemes if o.id === ot.idOeuvre && ot.idTheme === tKey
-//  } yield (o, ot.xInTheme, ot.yInTheme)
-//
-//  def __imagesByOeuvres(imagesKey: Rep[Int]) = for {
-//    o <- images.map(imageWithoutDataProjection)
-//    ot <- oeuvreImages if o._1 === ot.idOeuvre && ot.idImage === imagesKey
-//  } yield o
-//
-//  val _ouvresByTheme = Compiled(__ouevreByTheme _)
-//  val _imagesByOeuvres = Compiled(__ouevreByTheme _)
-//
-//
-//  def getOuevresByTheme(themeKey: Int):
-//  AppliedCompiledFunction[Int, Query[(OeuvresTable, Rep[Int], Rep[Int]), (Schema.Oeuvre, Int, Int), Seq]
-//    , Seq[(Schema.Oeuvre, Int, Int)]]
-//  = _ouvresByTheme(themeKey)
-
-
-  //  def imagesByOeuvres(i: Int): AppliedCompiledFunction[Int, Query[OeuvresTable, Oeuvre, Seq], Seq[Oeuvre]] = _imagesByOeuvres(i)
-
 
   def createMissing(): Future[List[Unit]] = {
     val existing = db.run(MTable.getTables)
@@ -76,12 +54,8 @@ trait SiteRepository {
     db.run(deleteAction).map(e => e ==1)
   }
 
-  def imagesMenuLnk(): Future[Seq[(Int, String)]] = {
-    db.run((for {
-      se <- siteElement if se.descriminator === Descri.IMAGE_MENU
-      im <- images if im.id === se.imageKey
-    } yield (im.id, im.contentType)).result)
-  }
+
+
 
   def addImages(data: Array[Byte], contentType: String,name : String,base:String): Future[Option[(Int, String)]] = {
     db.run((images += (0, contentType, data, name,base)).flatMap {
@@ -90,16 +64,6 @@ trait SiteRepository {
 
   }
 
-  def addSiteElement(imageKey: Option[Int], desc: Int): Future[Option[Int]] = {
-    val se = SiteElement(0, imageKey, desc)
-    val add = (siteElement += se).flatMap(
-      _ => siteElement.sortBy(_.id.desc).map(e => e.id).result.headOption
-    )
-    db.run(add.map {
-      case Some(1) => imageKey
-      case _ => None
-    })
-  }
 
 
   object Initilaizer {
